@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String              @id @default(cuid())
+  walletAddress String?             @unique
+  email         String?             @unique
+  identityType  String              @default("wallet")
+  username      String?
+  xp            Int                 @default(0)
+  level         String              @default("visitor")
+  createdAt     DateTime            @default(now())
+  sessions      QuizSession[]
+  submissions   MissionSubmission[]
+  rewards       Reward[]
+}
+
+model QuizSession {
+  id          String       @id @default(cuid())
+  userId      String?
+  user        User?        @relation(fields: [userId], references: [id])
+  levelId     String       @default("visitor")
+  passingScore Int         @default(14)
+  status      String       @default("active")
+  score       Int          @default(0)
+  total       Int          @default(20)
+  questionIds Json?
+  startedAt   DateTime     @default(now())
+  completedAt DateTime?
+  answers     Answer[]
+  jokerUsages JokerUsage[]
+}
+
+model Answer {
+  id             String      @id @default(cuid())
+  sessionId      String
+  session        QuizSession @relation(fields: [sessionId], references: [id])
+  questionId     String
+  selectedAnswer String
+  isCorrect      Boolean
+  createdAt      DateTime    @default(now())
+}
+
+model JokerUsage {
+  id         String      @id @default(cuid())
+  sessionId  String
+  session    QuizSession @relation(fields: [sessionId], references: [id])
+  jokerType  String
+  questionId String?
+  createdAt  DateTime    @default(now())
+
+  @@unique([sessionId, jokerType])
+}
+
+model MissionSubmission {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  missionId  String
+  txHash     String?
+  status     String    @default("pending")
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@unique([userId, missionId])
+  @@unique([txHash])
+}
+
+model Reward {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  missionId String   @default("legacy")
+  amount    String
+  status    String   @default("eligible")
+  txHash    String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, missionId])
+}
+
+model QuestionDraft {
+  id              String   @id
+  levelId         String
+  category        String
+  question        String   @unique
+  questionNormalized String?
+  questionHash    String?  @unique
+  options         Json
+  correctAnswer   String
+  explanation     String
+  sourceHint      String?
+  sourceTopic     String?
+  difficulty      String?
+  modelUsed       String?
+  uniquenessReason String?
+  status          String   @default("draft")
+  rejectionReason String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
