@@ -1,144 +1,342 @@
 # Arc Academy Agent
 
-Arc Academy Agent is a Next.js learning game for Arc Network. The MVP teaches Arc concepts through a quiz, asks users to complete a read-only verified Arc Testnet mission, records persistence with PostgreSQL, and tracks reward eligibility without sending funds.
+**Arc Academy Agent** is an interactive quiz and learning platform designed to help users understand the Arc Network ecosystem in a fun, structured, and engaging way.
 
-## MVP Features
+The project turns Arc learning into a level-based quiz experience where users can answer questions, use jokers, track progress, and move step by step toward becoming an **Arc Master**.
 
-- Landing page for "Who Wants to Be an Architect?"
-- `/play` quiz flow with server-authoritative answer checking.
-- Archie rule-based teacher messages.
-- Joker helpers: 50:50, Ask the Docs, Ask the Architect, and Explain Like I am New.
-- `/missions` Explorer Mission proof form.
-- Read-only Arc Testnet transaction verification through public RPC.
-- Prisma PostgreSQL persistence for users, quiz sessions, answers, mission submissions, and reward eligibility.
-- Anti-abuse checks for duplicate wallet mission claims and reused transaction hashes.
-- `/leaderboard` and `/profile` MVP views with local browser progress.
-- `/admin/rewards` read-only reward eligibility queue.
-- Optional RAG architecture plan and disabled placeholders.
+---
 
-## Setup
+## Why This Project Exists
 
-```bash
-npm install
-npx prisma generate
-npx prisma migrate dev
-npm run dev
+Learning a new ecosystem can be difficult, especially when it includes its own terminology, community structure, contributor tasks, campaigns, and technical concepts.
+
+Arc Academy Agent was built to make Arc Network education:
+
+- easier to understand
+- more interactive
+- more beginner-friendly
+- more engaging than passive reading
+- more useful for community onboarding
+
+Instead of only reading documentation, users can actively test their knowledge through Arc-focused questions and progress through different learning levels.
+
+---
+
+## What It Does
+
+Arc Academy Agent provides a gamified quiz experience focused on Arc Network and its ecosystem.
+
+Users begin as a **Visitor** and progress through Arc-themed levels:
+
+1. Visitor  
+2. Explorer  
+3. Pathfinder  
+4. Builder  
+5. Operator  
+6. Strategist  
+7. Architect  
+8. Protocolist  
+9. Arc Sage  
+10. Arc Master  
+
+Each level represents a deeper understanding of Arc. Early levels focus on basic concepts, while higher levels can include more detailed and challenging questions.
+
+---
+
+## Key Features
+
+- Modern landing page
+- Level-based quiz system
+- Arc-focused question bank
+- Difficulty-based questions
+- Fast quiz loading from database
+- Jokers to support learning during quizzes
+- Action log for quiz history
+- Result tracking
+- English-only user interface
+- Responsive desktop and mobile layout
+- Production deployment with Vercel and PostgreSQL
+
+---
+
+## Jokers
+
+To make the quiz more educational and interactive, Arc Academy Agent includes joker tools:
+
+- **50:50**  
+  Removes two incorrect options.
+
+- **Ask the Docs**  
+  Helps the user think through the question using a documentation-style hint.
+
+- **Ask the Architect**  
+  Provides a more advanced strategic hint.
+
+- **Explain Like I’m New**  
+  Explains the concept in a beginner-friendly way.
+
+These tools are designed to help users learn, not just guess.
+
+---
+
+## Technical Stack
+
+The project is built with a modern full-stack web architecture.
+
+```txt
+Next.js
+React
+TypeScript
+Tailwind CSS
+Prisma
+PostgreSQL
+Vercel
+OpenRouter
 ```
 
-Open `http://localhost:3000`.
+### Frontend
 
-Useful checks:
+The frontend is built with **Next.js**, **React**, and **TypeScript**.  
+**Tailwind CSS** is used for styling and provides a clean dark/cyan Arc Academy visual identity.
 
-```bash
-npm run lint
-npm run build
-npm run test:quiz
-npm run test:persistence
+### Backend
+
+The backend uses **Next.js API routes** and server-side logic to manage quiz sessions, question selection, progress, and persistence.
+
+### Database
+
+The project uses **Prisma** as the ORM and **PostgreSQL** as the production database.
+
+During development, the project initially used local storage/SQLite-style workflows, but production deployment was moved to PostgreSQL for reliability on Vercel.
+
+### Deployment
+
+The application is deployed on **Vercel**.
+
+Production setup includes:
+
+```txt
+GitHub
+Vercel
+PostgreSQL
+Prisma migrations
+Environment variables
 ```
 
-## Environment Variables
+---
 
-Create `.env` from `.env.example` for local development:
+## Question Bank Strategy
 
-```bash
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
+The project originally tested live AI-based question generation through OpenRouter.
+
+The goal was to generate fresh unique questions every time a user started a quiz. However, live generation caused some practical issues:
+
+- long waiting times
+- model timeouts
+- inconsistent free model availability
+- slower quiz start experience
+
+To improve reliability and user experience, the architecture was changed.
+
+### Current Strategy
+
+```txt
+OpenRouter = offline question generation tool
+Database = large Arc-focused question bank
+Live quiz = fast random selection from database
 ```
 
-No private keys are required. No reward wallet, faucet key, seed phrase, or transaction-sending secret is used by the MVP.
+This means users do not wait for live AI generation during the quiz.  
+Questions are generated, validated, stored, and served quickly from the database.
 
-## Arc Testnet Constants
+This approach gives the project:
 
-The constants are centralized in `src/lib/arc.ts`:
+- faster quiz start times
+- more stable user experience
+- better control over question quality
+- better duplicate prevention
+- easier difficulty balancing
+- more reliable production deployment
 
-- Chain ID: `5042002`
-- RPC URL: `https://rpc.testnet.arc.network`
-- Explorer URL: `https://testnet.arcscan.app`
-- Native gas token metadata: `USDC`, 18 decimals
+---
 
-Arc RPC usage is read-only. The app verifies transactions with public RPC reads and never sends transactions.
+## Question Quality and Duplicate Prevention
 
-## Quiz Flow
+A major focus of Arc Academy Agent is avoiding repeated, generic, or low-quality questions.
 
-1. User starts a quiz from `/play`.
-2. The API creates a persisted quiz session.
-3. The client receives public question data only. Correct answers are not sent before submission.
-4. Answers are checked by `POST /api/quiz/answer`.
-5. Passing requires at least 7 correct answers out of 10.
-6. Passing unlocks the Explorer Mission path in the UI.
+The question bank is designed to focus only on Arc-related topics, such as:
 
-## Mission Verification Flow
+- Arc Network
+- Archie
+- Arc Academy
+- contributor tasks
+- campaigns
+- community features
+- explorer features
+- level progression
+- ecosystem concepts
+- official or project-provided Arc context
 
-1. User opens `/missions`.
-2. User submits a wallet address and Arc Testnet transaction hash.
-3. The API validates formats and anti-abuse rules.
-4. The app calls read-only Arc Testnet RPC to verify the transaction exists.
-5. If valid, the mission submission is marked verified.
-6. If the user also passed the quiz, reward eligibility can be recorded.
+The system avoids generic crypto or generic blockchain questions.  
+The goal is not to create a random Web3 quiz, but a focused learning experience for Arc Network.
 
-## Anti-Abuse Behavior
+Duplicate prevention is handled through normalized question hashes and validation checks before questions are saved or reused.
 
-The MVP includes foundation checks:
+---
 
-- One verified submission per wallet per mission.
-- One transaction hash can only be used once.
-- Wallet and transaction hash format validation.
-- Quiz pass required before reward eligibility.
-- Re-verifying the same mission does not increment XP or create duplicate rewards.
+## User Experience
 
-TODOs remain for rate limiting, CAPTCHA, minimum quiz duration enforcement, and manual review queues.
+The interface is designed to be clean, readable, and focused.
 
-## Reward Queue Behavior
+Recent UX improvements include:
 
-The reward queue is eligibility-only.
+- cleaner homepage layout
+- compact level presentation
+- full English user interface
+- faster quiz start flow
+- better right-side quiz panel layout
+- jokers placed above the action log
+- clear loading and feedback states
+- responsive layout for different screen sizes
 
-- Eligible users are stored in the `Reward` table with status `eligible`.
-- `/admin/rewards` displays queued eligibility records.
-- No automatic reward sending exists.
-- No funds are sent.
-- No private keys are required.
-- No faucet or reward wallet logic exists.
+The goal is to make the platform feel like an interactive learning game rather than a static quiz page.
 
-## Archie Placeholder
+---
 
-`src/lib/archie.ts` contains rule-based teacher messages and future integration interfaces:
+## Project Goals
 
-- `AgentContext`
-- `AgentResponse`
-- `ArchieAgent`
+Arc Academy Agent aims to become an interactive education layer for the Arc ecosystem.
 
-The MVP does not call external AI APIs and does not require AI environment variables.
+The main goals are:
 
-## Optional Future RAG Plan
+- help new users understand Arc Network
+- make learning more engaging
+- support community onboarding
+- create a structured quiz-based learning path
+- encourage users to progress through Arc-themed levels
+- provide a scalable Arc-focused question bank
 
-`docs/ARC_RAG_PLAN.md` describes a future Arc docs retrieval architecture:
-
-- source ingestion
-- chunking
-- embeddings
-- vector store
-- retrieval
-- citations
-- answer safety
-- quiz-answer safety
-- Archie integration
-
-RAG is disabled by default in `src/lib/rag.ts`. The MVP works without RAG configured.
-
-## Safety Notes
-
-- No private keys are required.
-- No seed phrases are requested.
-- No automatic reward sending exists.
-- Arc RPC usage is read-only.
-- Reward queue is eligibility-only.
-- Quiz answers are not revealed before answer submission.
-- External AI APIs are not called.
+---
 
 ## Roadmap
 
-- Add stronger rate limiting and CAPTCHA for reward-sensitive actions.
-- Add manual admin review for suspicious submissions.
-- Add optional RAG-backed Archie responses with citations.
-- Add reward queue operations without automatic sending.
-- Add secure backend-only reward distribution only after abuse controls and manual review exist.
-- Improve persistent profile and leaderboard views.
+Planned improvements include:
+
+- expanding the question bank across all 10 levels
+- adding more advanced difficulty balancing
+- improving user progress tracking
+- improving leaderboard logic
+- adding achievement and badge systems
+- adding more Arc-specific learning paths
+- improving question explanations
+- adding source references for questions
+- creating better admin/developer tools for question audits
+- generating more offline questions with AI and validating them before production use
+
+---
+
+## Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Generate Prisma client:
+
+```bash
+npx prisma generate
+```
+
+Run the development server:
+
+```bash
+npm run dev
+```
+
+Build the project:
+
+```bash
+npm run build
+```
+
+Run lint checks:
+
+```bash
+npm run lint
+```
+
+Check the question bank, if the script is available:
+
+```bash
+npm run check:question-bank
+```
+
+---
+
+## Environment Variables
+
+Create a `.env` file for local development.
+
+Example:
+
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+LLM_PROVIDER="local"
+```
+
+Optional OpenRouter variables for offline question generation:
+
+```env
+OPENROUTER_API_KEY="your_openrouter_api_key"
+OPENROUTER_MODEL="openai/gpt-oss-120b:free"
+OPENROUTER_PRIMARY_MODEL="openai/gpt-oss-120b:free"
+OPENROUTER_FALLBACK_MODEL_1="z-ai/glm-4.5-air:free"
+OPENROUTER_FALLBACK_MODEL_2="openrouter/free"
+OPENROUTER_TIMEOUT_MS="30000"
+OPENROUTER_TOTAL_TIMEOUT_MS="90000"
+```
+
+> Do not commit `.env` files or API keys.
+
+---
+
+## Deployment
+
+The project is designed to run on Vercel.
+
+Recommended production setup:
+
+```txt
+Vercel hosting
+PostgreSQL database
+Prisma migrations
+DATABASE_URL environment variable
+```
+
+Vercel build command:
+
+```bash
+npm run vercel-build
+```
+
+Recommended deployment flow:
+
+```txt
+Push to GitHub
+Vercel builds the project
+Prisma generates the client
+Prisma applies migrations
+Next.js builds the app
+```
+
+---
+
+## Vision
+
+Arc Academy Agent is more than a quiz app.
+
+The long-term vision is to build a gamified learning companion for Arc Network users. It helps users learn, test themselves, understand the ecosystem, and progress from **Visitor** to **Arc Master**.
+
+The project was created to make Arc learning more accessible, more interactive, and more fun.
