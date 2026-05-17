@@ -117,8 +117,9 @@ export async function getOrCreateUser(identity: string | UserIdentityInput) {
     const normalizedEmail = normalizeEmail(input.email);
 
     await prisma.$executeRaw`
-      INSERT OR IGNORE INTO "User" ("id", "email")
+      INSERT INTO "User" ("id", "email")
       VALUES (${crypto.randomUUID()}, ${normalizedEmail})
+      ON CONFLICT ("email") DO NOTHING
     `;
 
     const users = await prisma.$queryRaw<
@@ -166,8 +167,9 @@ export async function getOrCreateUser(identity: string | UserIdentityInput) {
   const normalizedWallet = normalizeWallet(input.walletAddress);
 
   await prisma.$executeRaw`
-    INSERT OR IGNORE INTO "User" ("id", "walletAddress")
+    INSERT INTO "User" ("id", "walletAddress")
     VALUES (${crypto.randomUUID()}, ${normalizedWallet})
+    ON CONFLICT ("walletAddress") DO NOTHING
   `;
 
   const users = await prisma.$queryRaw<

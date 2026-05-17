@@ -1,6 +1,6 @@
 # Arc Academy Agent
 
-Arc Academy Agent is a Next.js learning game for Arc Network. The MVP teaches Arc concepts through a quiz, asks users to complete a read-only verified Arc Testnet mission, records local persistence with SQLite, and tracks reward eligibility without sending funds.
+Arc Academy Agent is a Next.js learning game for Arc Network. The MVP teaches Arc concepts through a quiz, asks users to complete a read-only verified Arc Testnet mission, records persistence with PostgreSQL, and tracks reward eligibility without sending funds.
 
 ## MVP Features
 
@@ -10,7 +10,7 @@ Arc Academy Agent is a Next.js learning game for Arc Network. The MVP teaches Ar
 - Joker helpers: 50:50, Ask the Docs, Ask the Architect, and Explain Like I am New.
 - `/missions` Explorer Mission proof form.
 - Read-only Arc Testnet transaction verification through public RPC.
-- Prisma SQLite persistence for users, quiz sessions, answers, mission submissions, and reward eligibility.
+- Prisma PostgreSQL persistence for users, quiz sessions, answers, mission submissions, and reward eligibility.
 - Anti-abuse checks for duplicate wallet mission claims and reused transaction hashes.
 - `/leaderboard` and `/profile` MVP views with local browser progress.
 - `/admin/rewards` read-only reward eligibility queue.
@@ -41,7 +41,7 @@ npm run test:persistence
 Create `.env` from `.env.example` for local development:
 
 ```bash
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
 ```
 
 No private keys are required. No reward wallet, faucet key, seed phrase, or transaction-sending secret is used by the MVP.

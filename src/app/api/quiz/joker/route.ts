@@ -79,8 +79,9 @@ export async function POST(request: Request) {
     }
 
     const inserted = await prisma.$executeRaw`
-      INSERT OR IGNORE INTO "JokerUsage" ("id", "sessionId", "jokerType", "questionId")
+      INSERT INTO "JokerUsage" ("id", "sessionId", "jokerType", "questionId")
       VALUES (${crypto.randomUUID()}, ${sessionId}, ${jokerType}, ${questionId})
+      ON CONFLICT ("sessionId", "jokerType") DO NOTHING
     `;
 
     if (inserted === 0) {
